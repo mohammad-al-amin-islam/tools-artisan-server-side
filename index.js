@@ -71,9 +71,16 @@ async function run() {
 
         //add orders to db
         app.post('/orders', async (req, res) => {
-            const { customerName, email, address, number, quantity, toolsName } = req.body;
-            const doc = { customerName: customerName, email: email, address: address, number: number, quantity: quantity, toolsName: toolsName };
+            const { customerName, email, address, number, quantity, toolsName, price } = req.body;
+            const doc = { customerName: customerName, email: email, address: address, number: number, quantity: quantity, toolsName: toolsName, price: price };
             const result = await orderCollection.insertOne(doc);
+            res.send(result);
+        });
+
+        app.get('/orders', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email }
+            const result = await orderCollection.find(query).toArray();
             res.send(result);
         })
     }
