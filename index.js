@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -11,7 +12,7 @@ app.use(express.json());
 
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_USER_PASSWORD}@cluster0.6bkls.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
@@ -37,6 +38,7 @@ async function run() {
         await client.connect();
         const toolsCollection = client.db("tools_artisan").collection("tools");
         const userCollection = client.db("tools_artisan").collection("users");
+        const orderCollection = client.db("tools_artisan").collection("orders");
 
         //tools data loading
         app.get('/tools', async (req, res) => {
@@ -46,7 +48,12 @@ async function run() {
             res.send(result);
         });
 
-
+        app.get('/tool/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await toolsCollection.findOne(query);
+            res.send(result);
+        });
 
         //add user info to db
         app.put('/user/:email', async (req, res) => {
@@ -60,6 +67,14 @@ async function run() {
             const result = await userCollection.updateOne(filter, updateDoc, options);
             const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' });
             res.send({ result, token });
+        });
+
+        //add orders to db
+        app.post('/orders', async (req, res) => {
+            const { customerName, email, address, number, quantity, toolsName } = req.body;
+            const doc = { customerName: customerName, email: email, address: address, number: number, quantity: quantity, toolsName: toolsName };
+            const result = await orderCollection.insertOne(doc);
+            res.send(result);
         })
     }
     finally {
