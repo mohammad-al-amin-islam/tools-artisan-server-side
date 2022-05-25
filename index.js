@@ -41,6 +41,7 @@ async function run() {
         const userCollection = client.db("tools_artisan").collection("users");
         const orderCollection = client.db("tools_artisan").collection("orders");
         const paymentCollection = client.db("tools_artisan").collection("payments");
+        const ratingCollection = client.db("tools_artisan").collection("ratings");
 
         //tools data loading
         app.get('/tools', async (req, res) => {
@@ -129,7 +130,25 @@ async function run() {
             const filter = { _id: ObjectId(id) };
             const result = await orderCollection.deleteOne(filter);
             res.send(result);
-        })
+        });
+
+
+        app.post('/ratings', async (req, res) => {
+            const { name, ratings, description } = req.body;
+            const doc = { name: name, ratings: ratings, description: description };
+            const result = await ratingCollection.insertOne(doc);
+            res.send(result);
+        });
+
+        app.get('/ratings', async (req, res) => {
+            const query = {};
+            const cursor = ratingCollection.find(query);
+            const result = await cursor.toArray();
+            res.send(result);
+        });
+
+
+
     }
     finally {
         // await client.close();
