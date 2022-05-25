@@ -109,15 +109,26 @@ async function run() {
             res.send(updateOrders);
         });
 
-        app.post('/create-payment-intent', async (req, res) => {
+        app.post('/create-payment-intent', verifyJWT, async (req, res) => {
             const { price } = req.body;
             const amount = price * 100;
             const paymentIntent = await stripe.paymentIntents.create({
                 amount: amount,
                 currency: 'usd',
                 payment_method_types: ['card']
+            })
+            res.send({
+                clientSecret: paymentIntent.client_secret,
             });
-            res.send({ clientSecret: paymentIntent.client_secret })
+
+        })
+
+        //delete item
+        app.delete('/orders/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await orderCollection.deleteOne(filter);
+            res.send(result);
         })
     }
     finally {
