@@ -25,7 +25,7 @@ function verifyJWT(req, res, next) {
     const token = auth.split(' ')[1];
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
         if (err) {
-            return req.status(403).send({ message: 'Forbiden' })
+            return res.status(403).send({ message: 'Forbiden' })
         }
         else {
             req.decoded = decoded;
@@ -147,6 +147,39 @@ async function run() {
             res.send(result);
         });
 
+        //get all users
+        app.get('/user', verifyJWT, async (req, res) => {
+            const query = {}
+            const result = await userCollection.find(query).toArray();
+            res.send(result);
+        });
+
+        app.put('/user/admin/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            const decodedEmail = req.decoded.email;
+            const adminMaker = await userCollection.findOne({ email: decodedEmail });
+            if (adminMaker.role === 'admin') {
+                const filter = { email: email };
+                const updateDoc = {
+                    $set: { role: 'admin' },
+                };
+                const result = await userCollection.updateOne(filter, updateDoc);
+                res.send(result);
+            }
+            else {
+                return res.status(403).send({ message: 'Forbidden' })
+            }
+
+        });
+
+
+        app.get('/admin/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email
+            const query = { email: email };
+            const result = await userCollection.findOne(query)
+            const isAdmin = result.role === 'admin'
+            res.send({ admin: isAdmin });
+        });
 
 
     }
