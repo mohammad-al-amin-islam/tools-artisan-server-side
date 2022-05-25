@@ -51,6 +51,13 @@ async function run() {
             res.send(result);
         });
 
+        app.post('/tools', async (req, res) => {
+            const { name, price, image, minOrder, availableQuantity, description } = req.body;
+            const doc = { name: name, price: price, image: image, minOrder: minOrder, availableQuantity: availableQuantity, description: description };
+            const result = await toolsCollection.insertOne(doc);
+            res.send(result);
+        });
+
         app.get('/tool/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
