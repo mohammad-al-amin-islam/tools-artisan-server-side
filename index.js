@@ -65,6 +65,13 @@ async function run() {
             res.send(result);
         });
 
+        //delete tool
+        app.delete('/tool/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await toolsCollection.deleteOne(filter);
+            res.send(result);
+        });
         //add user info to db
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email;
