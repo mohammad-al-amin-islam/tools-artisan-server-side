@@ -215,6 +215,26 @@ async function run() {
         });
 
 
+
+        //get all orders
+        app.get('/allorders', verifyJWT, async (req, res) => {
+            const query = {}
+            const result = await orderCollection.find(query).toArray();
+            res.send(result);
+        });
+
+        //set status shipped
+        app.put('/orders/shipped/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const updateDoc = {
+                $set: { status: true },
+            };
+            const result = await orderCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        });
+
+
     }
     finally {
         // await client.close();
