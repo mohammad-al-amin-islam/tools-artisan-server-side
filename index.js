@@ -234,6 +234,14 @@ async function run() {
             res.send(result);
         });
 
+        //delete unpaid order
+        app.delete('/order/unpaid/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await orderCollection.deleteOne(filter);
+            res.send(result);
+        });
+
 
     }
     finally {
