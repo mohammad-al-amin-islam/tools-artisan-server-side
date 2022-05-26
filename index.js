@@ -42,6 +42,7 @@ async function run() {
         const orderCollection = client.db("tools_artisan").collection("orders");
         const paymentCollection = client.db("tools_artisan").collection("payments");
         const ratingCollection = client.db("tools_artisan").collection("ratings");
+        const profileCollection = client.db("tools_artisan").collection("userProfile");
 
         //tools data loading
         app.get('/tools', async (req, res) => {
@@ -187,12 +188,30 @@ async function run() {
         });
 
 
+
+
+
+
         app.get('/admin/:email', verifyJWT, async (req, res) => {
             const email = req.params.email
             const query = { email: email };
             const result = await userCollection.findOne(query)
             const isAdmin = result.role === 'admin'
             res.send({ admin: isAdmin });
+        });
+
+
+
+        app.put('/userprofile/:email', async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email };
+            const user = req.body;
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: user,
+            };
+            const result = await profileCollection.updateOne(filter, updateDoc, options);
+            res.send(result);
         });
 
 
